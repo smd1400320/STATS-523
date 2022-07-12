@@ -1,6 +1,6 @@
 ---
 title: "R Markdown (Training)"
-output: pdf_document
+output: html_document
 date: "2022-07-12"
 ---
 
