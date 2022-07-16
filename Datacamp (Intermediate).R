@@ -1,44 +1,26 @@
 ##################################################
 ### chunk: printEx
 ##################################################
-Clinic_CoMMpass=read.table(file.choose(),header=T)
 library(ggplot2)
-NO_NA_Clinic_CoMMpass=subset(Clinic_CoMMpass,!is.na(ISS))
-ggplot(data=subset(NO_NA_Clinic_CoMMpass,!is.na(age)),aes(x=age,fill=ISS))+
-  geom_bar()
-MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=read.table(file.choose(),header=T)
-APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$GENE,"APOBEC"),]
-FIRST_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$sample,"_1_"),]
-ggplot(FIRST_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=GENE,fill=EFFECT))+
-  geom_bar(aes(x=forcats::fct_infreq(GENE)))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-SECOND_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$sample,"_2_"),]
-ggplot(SECOND_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=GENE,fill=EFFECT))+
-  geom_bar(aes(x=forcats::fct_infreq(GENE)))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-THIRD_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$sample,"_3_"),]
-ggplot(THIRD_APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=GENE,fill=EFFECT))+
-  geom_bar(aes(x=forcats::fct_infreq(GENE)))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-ggplot(APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=GENE,fill=EFFECT))+
-  geom_bar(aes(x=forcats::fct_infreq(GENE)))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-mean(APOBEC_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$TUMOR_DP)
-ggplot(MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=NORMAL_DP))+
-  geom_bar()
-mean(MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$TUMOR_DP)
-MAF_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$GENE,"MAF"),]
-FIRST_MAF_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants=MAF_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants[str_detect(MAF_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants$sample,"_1_"),]
-ggplot(FIRST_MAF_MMRF_CoMMpass_IA11a_IGV_All_Canonical_Variants,aes(x=GENE,fill=EFFECT))+
-  geom_bar(aes(x=forcats::fct_infreq(GENE)))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+library(dplyr)
+library(tidyverse)
+# Always name the element depending on your file name!
+CoMMpass_CN_data_collapsed=read.table(file.choose(),header=T)
+# Finding the total number of changes! Basically add major + minor = total!
+total=CoMMpass_CN_data_collapsed$major+CoMMpass_CN_data_collapsed$minor
+# Combining the new column total to the existing CoMMpass study!
+CoMMpass_CN_data_collapsed=cbind(CoMMpass_CN_data_collapsed,total)
+# - Create a column with  a categorical variable indicating if it is normal (diploid), 
+# - deleted, gained (total == 3), amplified (total >= 4) or if LOH (total < 2) is present!
+abnormal=total
+# Always start with the >= value, otherwise things get screwed over!
+abnormal[abnormal>=4]="AMP"
+abnormal[abnormal==2]="NORM"
+abnormal[abnormal==1]="LOH"
+abnormal[abnormal==0]="DEL"
+abnormal[abnormal==3]="GAIN"
+CoMMpass_CN_data_collapsed=cbind(CoMMpass_CN_data_collapsed,abnormal)
+# Creating a new data frame with the NORMAL value removed!
+NEW_CoMMpass_CN_data_collapsed=CoMMpass_CN_data_collapsed[!(CoMMpass_CN_data_collapsed$abnormal=="NORM"),]
+ggplot(data=NEW_CoMMpass_CN_data_collapsed,aes(x=Chrom,y=total,fill=abnormal))+
+  geom_bar(stat="identity")
