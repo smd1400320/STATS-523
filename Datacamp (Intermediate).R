@@ -22,7 +22,6 @@ abnormal[abnormal==3]="GAIN"
 CoMMpass_CN_data_collapsed=cbind(CoMMpass_CN_data_collapsed,abnormal)
 # Renaming the data frame with the NORMAL value removed!
 NEW_CoMMpass_CN_data_collapsed=CoMMpass_CN_data_collapsed[!(CoMMpass_CN_data_collapsed$abnormal=="NORM"),]
-levels(NEW_CoMMpass_CN_data_collapsed$Chrom)
 # Calculate how many patients exist(eg, 752)!
 length(unique(NEW_CoMMpass_CN_data_collapsed$sample))
 # Using dplyr rename all chromosomes (in order to appear in a correct order in ggplot), using the mutate function!
