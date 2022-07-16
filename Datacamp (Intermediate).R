@@ -20,7 +20,22 @@ abnormal[abnormal==1]="LOH"
 abnormal[abnormal==0]="DEL"
 abnormal[abnormal==3]="GAIN"
 CoMMpass_CN_data_collapsed=cbind(CoMMpass_CN_data_collapsed,abnormal)
-# Creating a new data frame with the NORMAL value removed!
+# Renaming the data frame with the NORMAL value removed!
 NEW_CoMMpass_CN_data_collapsed=CoMMpass_CN_data_collapsed[!(CoMMpass_CN_data_collapsed$abnormal=="NORM"),]
-ggplot(data=NEW_CoMMpass_CN_data_collapsed,aes(x=Chrom,y=total,fill=abnormal))+
+levels(NEW_CoMMpass_CN_data_collapsed$Chrom)
+# Calculate how many patients exist(eg, 752)!
+length(unique(NEW_CoMMpass_CN_data_collapsed$sample))
+# Using dplyr rename all chromosomes (in order to appear in a correct order in ggplot), using the mutate function!
+NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
+  mutate(Chrom = replace(Chrom, Chrom == 9, "09"))
+# - Creating a stacked barplot showing the number of each anomaly per each chromosome by / via the number of patients 
+# - (eg, finding the average number of gains/losses!
+ggplot(data=NEW_CoMMpass_CN_data_collapsed,aes(x=Chrom,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal))+
   geom_bar(stat="identity")
+# Creating a mirrored bar plot (above the x line AMP,GAIN and below the x line LOH, DEL)!
+ggplot()+
+  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total>2),],aes(x=Chrom,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
+  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total<2),],aes(x=Chrom,y=-total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
+# Renaming the y and x legends!
+  ylab("Average number of CNVs per patient")+
+  xlab("Chromosomes")
