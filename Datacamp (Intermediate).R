@@ -36,33 +36,36 @@ length(unique(NEW_CoMMpass_CN_data_collapsed$sample))
 
 # Using dplyr rename all chromosomes (in order to appear in a correct order in ggplot), using the mutate function!
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 1, "01"))
+  mutate(chr = replace(chr, chr == 1, "01"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 2, "02"))
+  mutate(chr = replace(chr, chr == 2, "02"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 3, "03"))
+  mutate(chr = replace(chr, chr == 3, "03"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 4, "04"))
+  mutate(chr = replace(chr, chr == 4, "04"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 5, "05"))
+  mutate(chr = replace(chr, chr == 5, "05"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 6, "06"))
+  mutate(chr = replace(chr, chr == 6, "06"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 7, "07"))
+  mutate(chr = replace(chr, chr == 7, "07"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 8, "08"))
+  mutate(chr = replace(chr, chr == 8, "08"))
 NEW_CoMMpass_CN_data_collapsed <- NEW_CoMMpass_CN_data_collapsed %>%
-  mutate(Chrom = replace(Chrom, Chrom == 9, "09"))
+  mutate(chr = replace(chr, chr == 9, "09"))
 
 # - Creating a stacked barplot showing the number of each anomaly per each chromosome by / via the number of patients 
 # - (eg, finding the average number of gains/losses!
-ggplot(data=NEW_CoMMpass_CN_data_collapsed,aes(x=Chrom,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal))+
+ggplot(data=NEW_CoMMpass_CN_data_collapsed,aes(x=chr,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),
+                                               fill=abnormal))+
   geom_bar(stat="identity")
 
 # Creating a mirrored bar plot (above the x line AMP,GAIN and below the x line LOH, DEL)!
 ggplot()+
-  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total>2),],aes(x=Chrom,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
-  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total<2),],aes(x=Chrom,y=-total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
+  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total>2),],
+           aes(x=chr,y=total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
+  geom_bar(data=NEW_CoMMpass_CN_data_collapsed[which(NEW_CoMMpass_CN_data_collapsed$total<2),],
+           aes(x=chr,y=-total/length(unique(NEW_CoMMpass_CN_data_collapsed$sample)),fill=abnormal),stat="identity")+
 # Renaming the y and x legends!
   ylab("Average number of CNVs per patient")+
   xlab("Chromosomes")
@@ -76,11 +79,11 @@ size=(gene[,"end"]-gene[,"start"])
 # Bind the gene dataframe with the new size vector!
 gene=cbind(gene,size)
 
-# Rename the column elements by removing "chr"!
-gene[,"Chrom"]=gsub("chr","",as.character(gene[,"Chrom"]))
+# Remove the "chr" from the chr column!
+gene$chr=gsub("chr","",as.character(gene$chr))
 
 # Create a barplot with the gene proportion per each chromosome!
-ggplot(data=gene,aes(x=Chrom,y=size,fill=gene)) + 
+ggplot(data=gene,aes(x=chr,y=size,fill=gene)) + 
   geom_bar(stat="identity",position="fill") +
   theme_bw() +
 # Have the x axis appear better!
@@ -90,7 +93,7 @@ ggplot(data=gene,aes(x=Chrom,y=size,fill=gene)) +
 
 # - Assign to each start and end point in the NEW_CoMMpass_CN_data_collapsed the correct gene by creating 
 # - a new data frame!
-complete=(setDT(NEW_CoMMpass_CN_data_collapsed)[setDT(gene), on = c("Chrom", "start<=start", "end>=end")])
+complete=(setDT(NEW_CoMMpass_CN_data_collapsed)[setDT(gene), on = c("chr", "start<=start", "end>=end")])
 
 # Remove the size column in the complete data frame!
 complete$size=NULL
@@ -103,4 +106,7 @@ colnames(complete)=c("sample","chr","start","end","major","minor","total","abnor
 ##################################################
 
 # Always name the element depending on your file name!
-CoMMpass_CN_data_collapsed=read.table(file.choose(),header=T)
+Clinic_CoMMpass=read.table(file.choose(),header=T)
+
+# Remove the "_1_BM" from the sample column!
+complete$sample=gsub("_1_BM","",as.character(complete$sample))
